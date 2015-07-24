@@ -5,6 +5,8 @@
         var defaults = {
             // Twitter-style pagination container selector.
             containerSelector: '.endless_container',
+            // addition for scrolling UP (in case pages are rendered "from the middle"
+            containerUpSelector: '.endless_container_up',
             // Twitter-style pagination loading selector.
             loadingSelector: '.endless_loading',
             // Twitter-style pagination link selector.
@@ -84,6 +86,11 @@
                     var data = 'querystring_key=' + context.key;
                     // Send the Ajax request.
                     $.get(context.url, data, function(fragment) {
+                        // get rid of "more up" - currently we're scrolling down
+                        fragment = $('<div>')
+                          .append($(fragment).not(settings.containerUpSelector))
+                          .html();
+
                         container.before(fragment);
                         container.remove();
                         // Increase the number of loaded pages.
