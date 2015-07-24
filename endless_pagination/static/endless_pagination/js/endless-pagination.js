@@ -13,6 +13,8 @@
             moreSelector: 'a.endless_more',
             // addition for scrolling up
             moreUpSelector: 'a.endless_more_up',
+            // addition for scrolling up
+            idPrefix: 'default-id-prefix-',
             // Digg-style pagination page template selector.
             pageSelector: '.endless_page_template',
             // Digg-style pagination link selector.
@@ -94,7 +96,7 @@
 
             if(hash && !$(hash).length){
 
-                var hash_content = hash.split("comment-");
+                var hash_content = hash.split(settings.idPrefix);
                 if (hash_content.length==2){
 
                     var id = hash_content[1],
