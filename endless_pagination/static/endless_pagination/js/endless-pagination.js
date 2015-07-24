@@ -38,22 +38,28 @@
                 loadedPages = 1,
                 hash = window.location.hash;
 
-            if(hash){
+            if(hash && !$(hash).length){
+
                 var hash_content = hash.split("comment-");
                 if (hash_content.length==2){
+
                     var id = hash_content[1],
                         cur_url = document.location.href.match(/(^[^#]*)/)[0],
                         url = cur_url + "?page-via-id=" + id;
+
                     $.get(url, "querystring_key=page", function(fragment) {
                         var container = $(settings.containerSelector);
+
                         container.before('<input type=button value="Show newer"/>');
                         container.before(fragment);
                         container.remove();
+
                         // Increase the number of loaded pages.
                         loadedPages += 1;
                         // refresh position
                         location.hash = "";
                         location.hash = hash;
+
                         // Fire onCompleted callback.
                         //settings.onCompleted.apply(
                         //    html_link, [context, fragment.trim()]);
