@@ -5,12 +5,14 @@
         var defaults = {
             // Twitter-style pagination container selector.
             containerSelector: '.endless_container',
-            // addition for scrolling UP (in case pages are rendered "from the middle"
+            // addition for scrolling up (in case pages are rendered "from the middle")
             containerUpSelector: '.endless_container_up',
             // Twitter-style pagination loading selector.
             loadingSelector: '.endless_loading',
             // Twitter-style pagination link selector.
             moreSelector: 'a.endless_more',
+            // addition for scrolling up
+            moreUpSelector: 'a.endless_more_up',
             // Digg-style pagination page template selector.
             pageSelector: '.endless_page_template',
             // Digg-style pagination link selector.
@@ -52,7 +54,6 @@
                     $.get(url, "querystring_key=page", function(fragment) {
                         var container = $(settings.containerSelector);
 
-                        container.before('<input type=button value="Show newer"/>');
                         container.before(fragment);
                         container.remove();
 
@@ -62,9 +63,45 @@
                         location.hash = "";
                         location.hash = hash;
 
-                        // Fire onCompleted callback.
-                        //settings.onCompleted.apply(
-                        //    html_link, [context, fragment.trim()]);
+                        //
+                        // TEST ONLY
+                        //
+                        element.on('click', settings.moreUpSelector, function() {
+                        var link = $(this),
+                            html_link = link.get(0),
+                            container = link.closest(settings.containerUpSelector),
+                            loading = container.find(settings.loadingSelector);
+                        // Avoid multiple Ajax calls.
+                        if (loading.is(':visible')) {
+                            return false;
+                        }
+                        link.hide();
+                        loading.show();
+                        var context = getContext(link);
+                        // Fire onClick callback.
+                        if (settings.onClick.apply(html_link, [context]) !== false) {
+                            var data = 'querystring_key=' + context.key;
+                            // Send the Ajax request.
+                            $.get(context.url, data, function(fragment) {
+                                // get rid of "more" - currently we're scrolling up
+                                fragment = $('<div>')
+                                  .append($(fragment).not(settings.containerSelector))
+                                  .html();
+
+                                container.before(fragment);
+                                container.remove();
+
+                                // Increase the number of loaded pages.
+                                loadedPages += 1;
+                                // Fire onCompleted callback.
+                                settings.onCompleted.apply(
+                                    html_link, [context, fragment.trim()]);
+                            });
+                        }
+                        return false;
+                    });
+
+
                     });
                 }
             }
