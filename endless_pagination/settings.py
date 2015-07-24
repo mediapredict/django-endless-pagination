@@ -10,6 +10,8 @@ from django.conf import settings
 PER_PAGE = getattr(settings, 'ENDLESS_PAGINATION_PER_PAGE', 10)
 # The querystring key of the page number.
 PAGE_LABEL = getattr(settings, 'ENDLESS_PAGINATION_PAGE_LABEL', 'page')
+ID_LABEL = getattr(settings, 'ENDLESS_PAGINATION_ID_LABEL', 'page-via-id')
+
 # See django *Paginator* definition of orphans.
 ORPHANS = getattr(settings, 'ENDLESS_PAGINATION_ORPHANS', 0)
 
