@@ -40,7 +40,57 @@
         return this.each(function() {
             var element = $(this),
                 loadedPages = 1,
-                hash = window.location.hash;
+                hash = window.location.hash,
+                add_fragment = function(container, fragment){
+                    container.before(fragment);
+                    container.remove();
+
+                    // Increase the number of loaded pages.
+                    loadedPages += 1;
+                };
+
+            function handle_twitter_style_click(more_selector,
+                                                container_selector,
+                                                ignored_container_selector) {
+
+                element.on('click', more_selector, function() {
+
+                    var link = $(this),
+                        html_link = link.get(0),
+                        container = link.closest(container_selector),
+                        loading = container.find(settings.loadingSelector);
+
+                    // Avoid multiple Ajax calls.
+                    if (loading.is(':visible')) {
+                        return false;
+                    }
+
+                    link.hide();
+                    loading.show();
+
+                    var context = getContext(link);
+
+                    // Fire onClick callback.
+                    if (settings.onClick.apply(html_link, [context]) !== false) {
+                        var data = 'querystring_key=' + context.key;
+                        // Send the Ajax request.
+                        $.get(context.url, data, function(fragment) {
+                            // get rid of "more", currently we're scrolling in
+                            // the opposite direction
+                            fragment = $('<div>')
+                              .append($(fragment).not(ignored_container_selector))
+                              .html();
+
+                            add_fragment(container, fragment);
+
+                            // Fire onCompleted callback.
+                            settings.onCompleted.apply(
+                                html_link, [context, fragment.trim()]);
+                        });
+                    }
+                    return false;
+                });
+            }
 
             if(hash && !$(hash).length){
 
@@ -54,91 +104,27 @@
                     $.get(url, "querystring_key=page", function(fragment) {
                         var container = $(settings.containerSelector);
 
-                        container.before(fragment);
-                        container.remove();
+                        add_fragment(container, fragment);
 
-                        // Increase the number of loaded pages.
-                        loadedPages += 1;
                         // refresh position
                         location.hash = "";
                         location.hash = hash;
 
-                        //
-                        // TEST ONLY
-                        //
-                        element.on('click', settings.moreUpSelector, function() {
-                        var link = $(this),
-                            html_link = link.get(0),
-                            container = link.closest(settings.containerUpSelector),
-                            loading = container.find(settings.loadingSelector);
-                        // Avoid multiple Ajax calls.
-                        if (loading.is(':visible')) {
-                            return false;
-                        }
-                        link.hide();
-                        loading.show();
-                        var context = getContext(link);
-                        // Fire onClick callback.
-                        if (settings.onClick.apply(html_link, [context]) !== false) {
-                            var data = 'querystring_key=' + context.key;
-                            // Send the Ajax request.
-                            $.get(context.url, data, function(fragment) {
-                                // get rid of "more" - currently we're scrolling up
-                                fragment = $('<div>')
-                                  .append($(fragment).not(settings.containerSelector))
-                                  .html();
-
-                                container.before(fragment);
-                                container.remove();
-
-                                // Increase the number of loaded pages.
-                                loadedPages += 1;
-                                // Fire onCompleted callback.
-                                settings.onCompleted.apply(
-                                    html_link, [context, fragment.trim()]);
-                            });
-                        }
-                        return false;
-                    });
-
+                        handle_twitter_style_click(
+                          settings.moreUpSelector,
+                          settings.containerUpSelector,
+                          settings.containerSelector
+                        );
 
                     });
                 }
             }
-            // Twitter-style pagination.
-            element.on('click', settings.moreSelector, function() {
-                var link = $(this),
-                    html_link = link.get(0),
-                    container = link.closest(settings.containerSelector),
-                    loading = container.find(settings.loadingSelector);
-                // Avoid multiple Ajax calls.
-                if (loading.is(':visible')) {
-                    return false;
-                }
-                link.hide();
-                loading.show();
-                var context = getContext(link);
-                // Fire onClick callback.
-                if (settings.onClick.apply(html_link, [context]) !== false) {
-                    var data = 'querystring_key=' + context.key;
-                    // Send the Ajax request.
-                    $.get(context.url, data, function(fragment) {
-                        // get rid of "more up" - currently we're scrolling down
-                        fragment = $('<div>')
-                          .append($(fragment).not(settings.containerUpSelector))
-                          .html();
 
-                        container.before(fragment);
-                        container.remove();
-                        // Increase the number of loaded pages.
-                        loadedPages += 1;
-                        // Fire onCompleted callback.
-                        settings.onCompleted.apply(
-                            html_link, [context, fragment.trim()]);
-                    });
-                }
-                return false;
-            });
+            handle_twitter_style_click(
+              settings.moreSelector,
+              settings.containerSelector,
+              settings.containerUpSelector
+            );
 
             // On scroll pagination.
             if (settings.paginateOnScroll) {
