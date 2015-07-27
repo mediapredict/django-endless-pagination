@@ -9,6 +9,7 @@ from endless_pagination.settings import (
     DEFAULT_CALLABLE_ARROWS,
     DEFAULT_CALLABLE_EXTREMES,
     PAGE_LABEL,
+    ID_LABEL,
 )
 
 
@@ -41,6 +42,18 @@ def get_page_number_from_request(
 
     If the page does not exists in *request*, or is not a number,
     then *default* number is returned.
+    """
+    try:
+        return int(request.REQUEST[querystring_key])
+    except (KeyError, TypeError, ValueError):
+        return default
+
+def get_id_number_from_request(
+        request, querystring_key=ID_LABEL, default=None):
+    """Retrieve the record id from *GET* or *POST* data.
+
+    If the id does not exists in *request*, or is not a number,
+    then None is returned.
     """
     try:
         return int(request.REQUEST[querystring_key])
@@ -169,6 +182,8 @@ def get_querystring_for_page(
         del querydict[querystring_key]
     if 'querystring_key' in querydict:
         del querydict['querystring_key']
+    if ID_LABEL in querydict:
+        del querydict[ID_LABEL]
     if querydict:
         return '?' + querydict.urlencode()
     return ''

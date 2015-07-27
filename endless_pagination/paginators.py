@@ -111,6 +111,13 @@ class LazyPaginator(BasePaginator):
             self._num_pages = number
         return CustomPage(objects, number, self)
 
+    def get_page_num_from_id(self, id):
+        for index, item in enumerate(self.object_list):
+            if item.id == id:
+                return (index - self.first_page)/self.per_page  + 2
+
+        return None
+
     def _get_count(self):
         raise NotImplementedError
 

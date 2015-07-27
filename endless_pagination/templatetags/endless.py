@@ -302,9 +302,14 @@ class PaginateNode(template.Node):
             default_number = utils.normalize_page_number(
                 default_number, paginator.page_range)
 
-        # The current request is used to get the requested page number.
-        page_number = utils.get_page_number_from_request(
-            context['request'], querystring_key, default=default_number)
+        # The current request is used to get either id or page number.
+        id = utils.get_id_number_from_request(context['request'])
+        if id:
+            page_number = paginator.get_page_num_from_id(id)
+
+        else:
+            page_number = utils.get_page_number_from_request(
+                context['request'], querystring_key, default=default_number)
 
         # Get the page.
         try:
@@ -365,6 +370,47 @@ def show_more(context, label=None, loading=settings.LOADING):
     # No next page, nothing to see.
     return {}
 
+@register.inclusion_tag('endless/show_more_up.html', takes_context=True)
+def show_more_up(context, label=None, loading=settings.LOADING):
+    """Show the link to get the next page in a Twitter-like pagination.
+
+    Usage::
+
+        {% show_more %}
+
+    Alternatively you can override the label passed to the default template::
+
+        {% show_more "even more" %}
+
+    You can override the loading text too::
+
+        {% show_more "even more" "working" %}
+
+    Must be called after ``{% paginate objects %}``.
+    """
+    # This template tag could raise a PaginationError: you have to call
+    # *paginate* or *lazy_paginate* before including the showmore template.
+    data = utils.get_data_from_context(context)
+    page = data['page']
+    # show the template only if there is a next page
+    if page.has_previous() and page.previous_page_number()>1:
+        request = context['request']
+        page_number = page.previous_page_number()
+        # Generate the querystring.
+        querystring_key = data['querystring_key']
+        querystring = utils.get_querystring_for_page(
+            request, page_number, querystring_key,
+            default_number=data['default_number'])
+        return {
+            'label': label,
+            'loading': loading,
+            'path': iri_to_uri(data['override_path'] or request.path),
+            'querystring': querystring,
+            'querystring_key': querystring_key,
+            'request': request,
+        }
+    # No next page, nothing to see.
+    return {}
 
 @register.tag
 def get_pages(parser, token):
