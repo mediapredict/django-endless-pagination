@@ -28,7 +28,9 @@
             // If paginate-on-scroll is on, this margin will be used.
             paginateOnScrollMargin : 1,
             // If paginate-on-scroll is on, it is possible to define chunks.
-            paginateOnScrollChunkSize: 0
+            paginateOnScrollChunkSize: 0,
+            // If separate ajax url is used to fetch pages
+            paginateAjaxUrl: document.location.href.match(/(^[^#]*)/)[0]
         },
             settings = $.extend(defaults, options);
 
@@ -100,8 +102,8 @@
                 if (hash_content.length==2){
 
                     var id = hash_content[1],
-                        cur_url = document.location.href.match(/(^[^#]*)/)[0],
-                        url = cur_url + "?page-via-id=" + id;
+                        ajax_url = settings.paginateAjaxUrl,
+                        url = ajax_url + "?page-via-id=" + id;
 
                     $.get(url, "querystring_key=page", function(fragment) {
                         var container = $(settings.containerSelector);
