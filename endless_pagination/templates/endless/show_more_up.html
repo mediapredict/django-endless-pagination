@@ -2,7 +2,13 @@
 {% if querystring %}
     <div class="endless_container_up">
         <a class="endless_more_up" href="{{ path }}{{ querystring }}"
-            rel="{{ querystring_key }}">{% if label %}{{ label }}{% else %}{% trans "more" %}{% endif %}</a>
-        <div class="endless_loading" style="display: none;">{{ loading|safe }}</div>
+            rel="{{ querystring_key }}">
+
+            <div class="endless_button_label">
+                {% if label %}{{ label }}{% else %}{% trans "more" %}{% endif %}
+            </div>
+
+        </a>
+        <div class="endless_loading endless_button_label" style="display: none;">{{ loading|safe }}</div>
     </div>
 {% endif %}
