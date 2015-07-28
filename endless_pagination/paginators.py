@@ -112,8 +112,8 @@ class LazyPaginator(BasePaginator):
         return CustomPage(objects, number, self)
 
     def get_page_num_from_id(self, id):
-        for index, item in enumerate(self.object_list):
-            if item.id == id:
+        for index, item_id in enumerate(self.object_list.values_list("id", flat=True)):
+            if item_id == id:
                 return (index - self.first_page)/self.per_page  + 2
 
         return None

@@ -327,6 +327,21 @@ class PaginateNode(template.Node):
         context.update({'endless': data, self.var_name: page.object_list})
         return ''
 
+def _render_show_more(data, label, loading, page_number, request):
+    # Generate the querystring.
+    querystring_key = data['querystring_key']
+    querystring = utils.get_querystring_for_page(
+        request, page_number, querystring_key,
+        default_number=data['default_number'])
+
+    return {
+        'label': label,
+        'loading': loading,
+        'path': iri_to_uri(data['override_path'] or request.path),
+        'querystring': querystring,
+        'querystring_key': querystring_key,
+        'request': request,
+    }
 
 @register.inclusion_tag('endless/show_more.html', takes_context=True)
 def show_more(context, label=None, loading=settings.LOADING):
@@ -354,39 +369,19 @@ def show_more(context, label=None, loading=settings.LOADING):
     if page.has_next():
         request = context['request']
         page_number = page.next_page_number()
-        # Generate the querystring.
-        querystring_key = data['querystring_key']
-        querystring = utils.get_querystring_for_page(
-            request, page_number, querystring_key,
-            default_number=data['default_number'])
-        return {
-            'label': label,
-            'loading': loading,
-            'path': iri_to_uri(data['override_path'] or request.path),
-            'querystring': querystring,
-            'querystring_key': querystring_key,
-            'request': request,
-        }
+
+        return _render_show_more(data, label, loading, page_number, request)
+
     # No next page, nothing to see.
     return {}
 
+
 @register.inclusion_tag('endless/show_more_up.html', takes_context=True)
 def show_more_up(context, label=None, loading=settings.LOADING):
-    """Show the link to get the next page in a Twitter-like pagination.
+    """Show the link to get the previous page in a Twitter-like pagination.
 
-    Usage::
+    Usage:: same as show more
 
-        {% show_more %}
-
-    Alternatively you can override the label passed to the default template::
-
-        {% show_more "even more" %}
-
-    You can override the loading text too::
-
-        {% show_more "even more" "working" %}
-
-    Must be called after ``{% paginate objects %}``.
     """
     # This template tag could raise a PaginationError: you have to call
     # *paginate* or *lazy_paginate* before including the showmore template.
@@ -396,19 +391,9 @@ def show_more_up(context, label=None, loading=settings.LOADING):
     if page.has_previous() and page.previous_page_number()>1:
         request = context['request']
         page_number = page.previous_page_number()
-        # Generate the querystring.
-        querystring_key = data['querystring_key']
-        querystring = utils.get_querystring_for_page(
-            request, page_number, querystring_key,
-            default_number=data['default_number'])
-        return {
-            'label': label,
-            'loading': loading,
-            'path': iri_to_uri(data['override_path'] or request.path),
-            'querystring': querystring,
-            'querystring_key': querystring_key,
-            'request': request,
-        }
+
+        return _render_show_more(data, label, loading, page_number, request)
+
     # No next page, nothing to see.
     return {}
 
