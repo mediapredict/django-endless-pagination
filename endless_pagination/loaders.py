@@ -1,8 +1,7 @@
 """Django Endless Pagination object loaders."""
 
-from importlib import import_module
-
 from __future__ import unicode_literals
+from importlib import import_module
 
 from django.core.exceptions import ImproperlyConfigured
 
