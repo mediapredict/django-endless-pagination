@@ -8,6 +8,7 @@ from endless_pagination.settings import (
     TEMPLATE_VARNAME,
 )
 
+from .utils import req_params
 
 def page_template(template, key=PAGE_LABEL):
     """Return a view dynamically switching template if the request is Ajax.
@@ -28,7 +29,7 @@ def page_template(template, key=PAGE_LABEL):
             extra_context = kwargs.setdefault('extra_context', {})
             extra_context['page_template'] = template
             # Switch the template when the request is Ajax.
-            querystring_key = request.REQUEST.get(
+            querystring_key = req_params(request).get(
                 'querystring_key', PAGE_LABEL)
             if request.is_ajax() and querystring_key == key:
                 kwargs[TEMPLATE_VARNAME] = template
@@ -77,7 +78,7 @@ def page_templates(mapping):
             # Trust the developer: he wrote ``context.update(extra_context)``
             # in his view.
             extra_context = kwargs.setdefault('extra_context', {})
-            querystring_key = request.REQUEST.get(
+            querystring_key = req_params(request).get(
                 'querystring_key', PAGE_LABEL)
             template = _get_template(querystring_key, mapping)
             extra_context['page_template'] = template

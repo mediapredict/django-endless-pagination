@@ -44,7 +44,7 @@ def get_page_number_from_request(
     then *default* number is returned.
     """
     try:
-        return int(request.REQUEST[querystring_key])
+        return int(req_params(request)[querystring_key])
     except (KeyError, TypeError, ValueError):
         return default
 
@@ -56,7 +56,7 @@ def get_id_number_from_request(
     then None is returned.
     """
     try:
-        return int(request.REQUEST[querystring_key])
+        return int(req_params(request)[querystring_key])
     except (KeyError, TypeError, ValueError):
         return default
 
@@ -207,3 +207,6 @@ class UnicodeMixin(object):
     if PYTHON3:
         def __str__(self):
             return self.__unicode__()
+
+def req_params(request):
+    return request.POST if request.method == 'POST' else request.GET

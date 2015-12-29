@@ -10,7 +10,7 @@ from django.views.generic.base import View
 from django.views.generic.list import MultipleObjectTemplateResponseMixin
 
 from endless_pagination.settings import PAGE_LABEL
-
+from .utils import req_params
 
 class MultipleObjectMixin(object):
 
@@ -131,7 +131,7 @@ class AjaxMultipleObjectTemplateResponseMixin(
     def get_template_names(self):
         """Switch the templates for Ajax requests."""
         request = self.request
-        querystring_key = request.REQUEST.get('querystring_key', PAGE_LABEL)
+        querystring_key = req_params(request).get('querystring_key', PAGE_LABEL)
         if request.is_ajax() and querystring_key == self.key:
             return [self.page_template]
         return super(
